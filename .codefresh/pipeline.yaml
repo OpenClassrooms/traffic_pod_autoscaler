@@ -27,17 +27,16 @@ steps:
   build:
     stage: docker
     type: build
-    image_name: ${{IMAGE_NAME}}
     working_directory: ${{clone}}/traffic_pod_autoscaler
-    dockerfile: Dockerfile
+    image_name: ${{IMAGE_NAME}}
     tag: ${{TAG}}
     no_cache: true
     no_cf_cache: true
 
-  push:
-    stage: docker
-    type: push
-    arguments:
-      candidate: ${{build}}
-      tag: ${{TAG}}
-      image_name: ${{IMAGE_NAME}}
+  # push:
+  #   stage: docker
+  #   type: push
+  #   arguments:
+  #     candidate: ${{build}}
+  #     tag: ${{TAG}}
+  #     image_name: ${{IMAGE_NAME}}
