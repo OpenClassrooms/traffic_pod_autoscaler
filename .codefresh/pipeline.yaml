@@ -33,10 +33,10 @@ steps:
     no_cache: true
     no_cf_cache: true
 
-  # push:
-  #   stage: docker
-  #   type: push
-  #   arguments:
-  #     candidate: ${{build}}
-  #     tag: ${{TAG}}
-  #     image_name: ${{IMAGE_NAME}}
+  push:
+    stage: docker
+    type: push
+    arguments:
+      candidate: ${{build}}
+      tag: ${{TAG}}
+      image_name: ${{IMAGE_NAME}}
