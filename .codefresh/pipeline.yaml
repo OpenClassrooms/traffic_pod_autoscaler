@@ -1,12 +1,7 @@
 version: 1.0
 
-stages:
-- init
-- docker
-
 steps:
   init:
-    stage: init
     image: alpine
     commands:
     - cf_export IMAGE_NAME=${IMAGE_NAME:-oc/${{CF_REPO_NAME}}}
@@ -18,14 +13,12 @@ steps:
       fi
 
   clone:
-    stage: init
     type: git-clone
     git: oc-infra-bot
     repo: ${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}
     revision: ${{CF_BRANCH}}
 
   build:
-    stage: docker
     type: build
     working_directory: ${{clone}}/traffic_pod_autoscaler
     image_name: ${{IMAGE_NAME}}
@@ -34,7 +27,6 @@ steps:
     no_cf_cache: true
 
   push:
-    stage: docker
     type: push
     arguments:
       candidate: ${{build}}
