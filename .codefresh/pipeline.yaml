@@ -5,6 +5,18 @@ stages:
 - docker
 
 steps:
+  init:
+    stage: init
+    image: alpine
+    commands:
+    - cf_export IMAGE_NAME=${IMAGE_NAME:-oc/${{CF_REPO_NAME}}}
+    - |
+      if [[ ${{CF_BRANCH}} == "main" ]]; then
+        cf_export TAG=latest
+      else
+        cf_export TAG=${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}
+      fi
+
   clone:
     stage: init
     type: git-clone
@@ -15,10 +27,10 @@ steps:
   build:
     stage: docker
     type: build
-    image_name: oc/traffic_pod_autoscaler
+    image_name: ${{IMAGE_NAME}}
     working_directory: ${{clone}}/traffic_pod_autoscaler
     dockerfile: Dockerfile
-    tag: latest
+    tag: ${{TAG}}
     no_cache: true
     no_cf_cache: true
 
@@ -27,5 +39,5 @@ steps:
     type: push
     arguments:
       candidate: ${{build}}
-      tag: latest
-      image_name: oc/traffic_pod_autoscaler
+      tag: ${{TAG}}
+      image_name: ${{IMAGE_NAME}}
