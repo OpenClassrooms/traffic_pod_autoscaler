@@ -1,4 +1,3 @@
-
 from time import sleep
 from libs.LoggerToolbox import _logger
 from libs.Toolbox import _toolbox
@@ -7,8 +6,8 @@ from libs.KubernetesToolbox import KubernetesToolbox
 
 class Scaler(object):
     _k8s: KubernetesToolbox
-    _last_call_at_annotation = 'traffic-pod-autoscaler/last-call-at'
-    _scale_down_at_annotation = 'traffic-pod-autoscaler/last-scale-down-at'
+    _last_call_at_annotation = "traffic-pod-autoscaler/last-call-at"
+    _scale_down_at_annotation = "traffic-pod-autoscaler/last-scale-down-at"
 
     _namespace = ""
     _rs_label_selector = ""
@@ -35,8 +34,7 @@ class Scaler(object):
             self._namespace = args.namespace
 
         if "rs_label_selector" in args:
-            self._rs_label_selector = self._k8s.sanitize_label_selector(
-                args.rs_label_selector)
+            self._rs_label_selector = self._k8s.sanitize_label_selector(args.rs_label_selector)
 
         if "config_map" in args:
             self._config_map_name = args.config_map
@@ -57,10 +55,8 @@ class Scaler(object):
         _logger.info(f"Watching config_map: {self._config_map_name}")
         _logger.info(f"Watching rs_label_selector: {self._rs_label_selector}")
         _logger.info(f"Watching endpoint: {self._endpoint_name}")
-        _logger.info(
-            f"Traffic expiration time: {self._expiration_time} (in seconds)")
-        _logger.info(
-            f"Time between 2 checks: {self._waiting_time} (in ms)")
+        _logger.info(f"Traffic expiration time: {self._expiration_time} (in seconds)")
+        _logger.info(f"Time between 2 checks: {self._waiting_time} (in ms)")
         _logger.info(f"Max retries: {self._max_retry}")
 
     def set_replica_number(self, _replicas):
@@ -81,17 +77,17 @@ class Scaler(object):
         if self._replicas is not None:
             if self._replicas > 0:
                 if self._replicas_check is not None:
-                    if _toolbox.get_date_age(self._replicas_check) < _toolbox.get_date_timedelta_seconds(self._replicas_cache_second):
+                    if _toolbox.get_date_age(self._replicas_check) < _toolbox.get_date_timedelta_seconds(
+                        self._replicas_cache_second
+                    ):
                         _logger.debug("use cache")
                         return self._replicas
 
-        _replicas = self._k8s.get_replica_number(
-            self._namespace, self._rs_label_selector)
+        _replicas = self._k8s.get_replica_number(self._namespace, self._rs_label_selector)
         return self.set_replica_number(_replicas)
 
     def update_replica_number(self, _replica=0):
-        self._k8s.update_replica_set_number(
-            self._namespace, _replica, self._rs_label_selector)
+        self._k8s.update_replica_set_number(self._namespace, _replica, self._rs_label_selector)
 
     def scale_down(self, _replica=0):
         _logger.debug("START")
@@ -111,12 +107,14 @@ class Scaler(object):
         _logger.debug("START")
         _now_UTC = _toolbox.get_date_now_utc()
         _updated_annotation = self._k8s.update_config_map_annotation(
-            self._namespace, self._config_map_name, _annotation, _now_UTC.isoformat())
+            self._namespace, self._config_map_name, _annotation, _now_UTC.isoformat()
+        )
         return _updated_annotation
 
     def get_last_call_annotation(self, _count=0):
         _last_call_annotation = self._k8s.get_config_map_annotation(
-            self._namespace, self._config_map_name, self._last_call_at_annotation)
+            self._namespace, self._config_map_name, self._last_call_at_annotation
+        )
         _logger.debug(f"_last_call_annotation {_last_call_annotation}")
 
         if _last_call_annotation is None and _count == 0:
@@ -130,8 +128,7 @@ class Scaler(object):
         _logger.debug("START")
         _last_call_annotation = self.get_last_call_annotation()
 
-        _last_call_UTC = _toolbox.get_date_utc_from_string(
-            _last_call_annotation)
+        _last_call_UTC = _toolbox.get_date_utc_from_string(_last_call_annotation)
 
         _now_UTC = _toolbox.get_date_now_utc()
         _timedelta = _toolbox.get_date_timedelta_seconds(self._expiration_time)
@@ -152,12 +149,11 @@ class Scaler(object):
             # wait endpoint is available
             __waiting_time_ms = self._waiting_time
             for i in range(1, self._max_retry):
-                _endpoint_status = self._k8s.check_endpoint_available(
-                    self._namespace, self._endpoint_name)
+                _endpoint_status = self._k8s.check_endpoint_available(self._namespace, self._endpoint_name)
                 if _endpoint_status:
                     return True
                 else:
-                    __timer = (__waiting_time_ms/1000)
+                    __timer = __waiting_time_ms / 1000
                     _logger.debug(f"Wait {__timer}s before next retry")
                     sleep(__timer)
                     __waiting_time_ms = __waiting_time_ms * self._factor

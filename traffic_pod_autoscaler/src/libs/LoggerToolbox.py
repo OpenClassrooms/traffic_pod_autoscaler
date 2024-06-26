@@ -80,8 +80,7 @@ class LoggerToolbox(object):
         _parent_function = _inspect_obj.function
         _parent_filename = _inspect_obj.filename
         _parent_file_lineno = _inspect_obj.lineno
-        self._log(
-            f"[{_parent_filename}::{_parent_function}::{_parent_file_lineno}] {_message}", "DEBUG")
+        self._log(f"[{_parent_filename}::{_parent_function}::{_parent_file_lineno}] {_message}", "DEBUG")
 
     def trace(self, _message):
         self._log(_message, "TRACE")

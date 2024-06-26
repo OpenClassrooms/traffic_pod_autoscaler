@@ -1,4 +1,5 @@
 import socket
+
 # import socks
 import select
 import string
@@ -69,7 +70,8 @@ class Proxy(object):
 
         # Define n seconds as a timedelta object
         self._update_annotation_refresh_interval_delta = _toolbox.get_date_timedelta_seconds(
-            self._update_annotation_refresh_interval)
+            self._update_annotation_refresh_interval
+        )
 
     def set_scaler(self, _scaler: Scaler):
         _logger.debug("START")
@@ -95,23 +97,21 @@ class Proxy(object):
 
                 self.lsock.append(sock)
 
-                _logger.info(
-                    f'Listening on {self.local_address}:{self.local_port}')
+                _logger.info(f"Listening on {self.local_address}:{self.local_port}")
             except Exception as e:
                 _logger.exception(
-                    f"Exception:Proxy_tcp_server:{e} // Failed to listen on {self.local_address}:{self.local_port}")
+                    f"Exception:Proxy_tcp_server:{e} // Failed to listen on {self.local_address}:{self.local_port}"
+                )
 
             while True:
-                readable, writable, exceptional = select.select(
-                    self.lsock, [], [])
+                readable, writable, exceptional = select.select(self.lsock, [], [])
                 for s in readable:
                     if s == sock:
                         self.hit_request()  # very important, else target will not be available to connect
                         try:
                             rserver = self.remote_conn()
                         except Exception as e:
-                            _logger.error(
-                                "the connection with the remote server can't be established")
+                            _logger.error("the connection with the remote server can't be established")
 
                         if rserver:
                             try:
@@ -119,8 +119,7 @@ class Proxy(object):
                                 client, addr = sock.accept()
 
                                 self.stats_add_request_infos(addr[0])
-                                _logger.info(
-                                    f"Accepted connection from {addr[0]}:{addr[1]}")
+                                _logger.info(f"Accepted connection from {addr[0]}:{addr[1]}")
                                 self.store_sock(client, addr, rserver)
                             except Exception as e:
                                 _logger.info(f"Exception:sock.accept: {e}")
@@ -131,11 +130,10 @@ class Proxy(object):
                     try:
                         data = self.received_from(s)
                     except Exception as e:
-                        _logger.exception(
-                            f"Exception:Proxy_tcp_server_received_from:{e}")
+                        _logger.exception(f"Exception:Proxy_tcp_server_received_from:{e}")
 
                     if not isinstance(data, bytes):
-                        data = bytes(data, 'utf-8')
+                        data = bytes(data, "utf-8")
 
                     try:
                         self.send_data(self.msg_queue[s], data)
@@ -144,19 +142,17 @@ class Proxy(object):
                         _logger.debug(f"Exception:send_data:{e}")
 
                     if len(data) == 0:
-                        _logger.trace(
-                            f"Exception:Proxy_tcp_server:Received 0 byte from client")
+                        _logger.trace(f"Exception:Proxy_tcp_server:Received 0 byte from client")
                         try:
                             self.close_sock(s)
                             # client.close()
                         except Exception as e:
                             _logger.debug(f"Exception:client.close: {e}")
                     else:
-                        _logger.trace(
-                            f'Received {len(data)} bytes from client ')
+                        _logger.trace(f"Received {len(data)} bytes from client ")
 
         except KeyboardInterrupt:
-            _logger.info('Ending server')
+            _logger.info("Ending server")
         except Exception as e:
             _logger.exception(f"Exception:Proxy_tcp_server:{e}")
 
@@ -164,17 +160,15 @@ class Proxy(object):
         _logger.debug("START")
         counter = 0
         max_attempts = 60
-        while (counter < max_attempts):
+        while counter < max_attempts:
             try:
                 remote_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                remote_sock.connect(
-                    (self._remote_address, int(self._remote_port)))
+                remote_sock.connect((self._remote_address, int(self._remote_port)))
 
                 return remote_sock
             except Exception as e:
                 counter += 1
-                _logger.debug(
-                    f"Sleep 1s due to connect failure ({counter}/{max_attempts}): {e}")
+                _logger.debug(f"Sleep 1s due to connect failure ({counter}/{max_attempts}): {e}")
                 time.sleep(1)
 
         _exception_msg = f"Exception:Proxy_remote_conn: Max connect attempts reached ({max_attempts})."
@@ -208,8 +202,7 @@ class Proxy(object):
                 # Re-establish the connection and try again
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 _addr = sock.getsockname()
-                _logger.debug(
-                    f"Try to connect to the server:{_addr}")
+                _logger.debug(f"Try to connect to the server:{_addr}")
                 sock.connect(_addr)
                 sock.sendall(_data)
             else:
@@ -228,8 +221,7 @@ class Proxy(object):
             # Re-establish the connection and try again
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             _addr = (self._remote_address, int(self._remote_port))
-            _logger.debug(
-                f"Try to connect to the server:{_addr}")
+            _logger.debug(f"Try to connect to the server:{_addr}")
             sock.connect(_addr)
 
         try:
@@ -247,16 +239,14 @@ class Proxy(object):
                 except socket.error as err:
 
                     if err.errno == 107:
-                        _logger.debug(
-                            "The connection was closed by the server.")
+                        _logger.debug("The connection was closed by the server.")
                         if _reconnect:
                             pass
                         else:
                             # return self.received_from(sock, True)
                             break
                     elif err.errno == 110:
-                        _logger.debug(
-                            "The connection was timeout by the server.")
+                        _logger.debug("The connection was timeout by the server.")
                         break
                     else:
                         break
@@ -267,7 +257,7 @@ class Proxy(object):
         return _data
 
     def close_sock(self, sock):
-        _logger.debug('End of connection with {}'.format(sock.getpeername()))
+        _logger.debug("End of connection with {}".format(sock.getpeername()))
 
         self.lsock.remove(self.msg_queue[sock])
         self.lsock.remove(self.msg_queue[self.msg_queue[sock]])
@@ -303,20 +293,14 @@ class Proxy(object):
 
     def stats_add_request_infos(self, _from=""):
         _logger.debug("START")
-        self._stats_request.append(
-            {
-                'from': _from,
-                'when': _toolbox.get_date_now_utc()
-            }
-        )
+        self._stats_request.append({"from": _from, "when": _toolbox.get_date_now_utc()})
 
     def update_annotation_last_call(self):
         try:
             if self._last_call is not None:
                 # use watcher to avoid updating the configmap too often
                 _last_call_annotation = self._scaler.get_last_call_annotation()
-                _last_call_annotation_UTC = _toolbox.get_date_utc_from_string(
-                    _last_call_annotation)
+                _last_call_annotation_UTC = _toolbox.get_date_utc_from_string(_last_call_annotation)
 
                 _diff = self._last_call - _last_call_annotation_UTC
 

@@ -5,7 +5,7 @@ from Scaler import Scaler
 
 class ScalerWatcher(Watcher):
 
-    def _watcher_function(self, _args,  _scaler: Scaler):
+    def _watcher_function(self, _args, _scaler: Scaler):
         _logger.debug("START ScalerWatcher")
         is_expired = _scaler.is_expired()
         _logger.debug(f"is_expired: {is_expired}")

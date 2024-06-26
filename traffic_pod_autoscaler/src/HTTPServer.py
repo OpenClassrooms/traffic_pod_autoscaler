@@ -30,13 +30,11 @@ class HTTPServer(threading.Thread):
         self.start()
 
     def run(self):
-        _handler = partial(
-            HTTPRequestHandler, self._ping_url, self._metrics_url, self._proxy)
+        _handler = partial(HTTPRequestHandler, self._ping_url, self._metrics_url, self._proxy)
 
         self._webServer = _HTTPServer(("", self._http_server_port), _handler)
         while not self.stop_requested:
-            _logger.info(
-                f"HTTP Server started on port {self._http_server_port}")
+            _logger.info(f"HTTP Server started on port {self._http_server_port}")
             self._webServer.serve_forever()
 
     def stop(self):
