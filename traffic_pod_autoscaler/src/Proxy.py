@@ -9,6 +9,7 @@ from libs.LoggerToolbox import _logger
 from libs.Toolbox import _toolbox
 from Scaler import Scaler
 
+BUFF_SIZE = 16 * 2**10 # 16KB, should be power of 2
 
 class Proxy(object):
     local_address: string
@@ -134,7 +135,7 @@ class Proxy(object):
                         _logger.exception(
                             f"Exception:Proxy_tcp_server_received_from:{e}")
 
-                    if not isinstance(data, bytes):
+                    if not isinstance(data, (bytes, bytearray)):
                         data = bytes(data, 'utf-8')
 
                     try:
@@ -219,8 +220,7 @@ class Proxy(object):
     def received_from(self, sock: socket.socket, _reconnect=False):
         _logger.debug("START")
 
-        BUFF_SIZE = 4096
-        _data = b""
+        _data = bytearray(b"")
 
         sock.setblocking(False)
         # sock.settimeout(int(self._remote_timeout))
