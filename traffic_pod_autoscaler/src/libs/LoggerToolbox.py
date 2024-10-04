@@ -76,12 +76,14 @@ class LoggerToolbox(object):
         self._log(_message, "WARNING")
 
     def debug(self, _message):
-        _inspect_obj = inspect.stack()[1]
-        _parent_function = _inspect_obj.function
-        _parent_filename = _inspect_obj.filename
-        _parent_file_lineno = _inspect_obj.lineno
-        self._log(
-            f"[{_parent_filename}::{_parent_function}::{_parent_file_lineno}] {_message}", "DEBUG")
+        if self.level_code_DEBUG >= self._level_code:
+            _inspect_obj = inspect.stack()[1]
+            _parent_function = _inspect_obj.function
+            _parent_filename = _inspect_obj.filename
+            _parent_file_lineno = _inspect_obj.lineno
+            self._log(
+                f"[{_parent_filename}::{_parent_function}::{_parent_file_lineno}] {_message}", "DEBUG")
+
 
     def trace(self, _message):
         self._log(_message, "TRACE")
